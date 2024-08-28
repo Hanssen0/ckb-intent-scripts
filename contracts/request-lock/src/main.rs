@@ -6,8 +6,8 @@ extern crate alloc;
 
 mod entry;
 mod error;
-mod generated;
-mod intent;
+mod time_lock;
+mod types;
 mod utils;
 
 #[cfg(not(test))]

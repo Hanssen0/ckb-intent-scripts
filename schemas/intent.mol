@@ -7,23 +7,8 @@ struct ScriptAttr {
 
 vector ScriptAttrVec <ScriptAttr>; 
 
-table AnotherIntent {
-    script_hash: Byte32,
-    intent_data: Bytes,
-}
-
-union IntentTarget {
-	Script,
-	AnotherIntent,
-}
-
-vector IntentTargetVec <IntentTarget>;
-
 table IntentData {
-    location: byte,
-    owner: ScriptAttr,
-    expire_since: Uint64,
-    signers: ScriptAttrVec,
-    targets: IntentTargetVec,
+    creators: ScriptAttrVec,
+    targets: BytesVec,
     input_data: Bytes,
 }

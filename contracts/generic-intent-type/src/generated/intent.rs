@@ -2,7 +2,6 @@
 
 use ckb_std::ckb_types::packed::*;
 use molecule::prelude::*;
-
 #[derive(Clone)]
 pub struct ScriptAttr(molecule::bytes::Bytes);
 impl ::core::fmt::LowerHex for ScriptAttr {
@@ -448,922 +447,6 @@ impl ::core::iter::FromIterator<ScriptAttr> for ScriptAttrVec {
     }
 }
 #[derive(Clone)]
-pub struct AnotherIntent(molecule::bytes::Bytes);
-impl ::core::fmt::LowerHex for AnotherIntent {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
-        use molecule::hex_string;
-        if f.alternate() {
-            write!(f, "0x")?;
-        }
-        write!(f, "{}", hex_string(self.as_slice()))
-    }
-}
-impl ::core::fmt::Debug for AnotherIntent {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
-        write!(f, "{}({:#x})", Self::NAME, self)
-    }
-}
-impl ::core::fmt::Display for AnotherIntent {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
-        write!(f, "{} {{ ", Self::NAME)?;
-        write!(f, "{}: {}", "script_hash", self.script_hash())?;
-        write!(f, ", {}: {}", "intent_data", self.intent_data())?;
-        let extra_count = self.count_extra_fields();
-        if extra_count != 0 {
-            write!(f, ", .. ({} fields)", extra_count)?;
-        }
-        write!(f, " }}")
-    }
-}
-impl ::core::default::Default for AnotherIntent {
-    fn default() -> Self {
-        let v = molecule::bytes::Bytes::from_static(&Self::DEFAULT_VALUE);
-        AnotherIntent::new_unchecked(v)
-    }
-}
-impl AnotherIntent {
-    const DEFAULT_VALUE: [u8; 48] = [
-        48, 0, 0, 0, 12, 0, 0, 0, 44, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    ];
-    pub const FIELD_COUNT: usize = 2;
-    pub fn total_size(&self) -> usize {
-        molecule::unpack_number(self.as_slice()) as usize
-    }
-    pub fn field_count(&self) -> usize {
-        if self.total_size() == molecule::NUMBER_SIZE {
-            0
-        } else {
-            (molecule::unpack_number(&self.as_slice()[molecule::NUMBER_SIZE..]) as usize / 4) - 1
-        }
-    }
-    pub fn count_extra_fields(&self) -> usize {
-        self.field_count() - Self::FIELD_COUNT
-    }
-    pub fn has_extra_fields(&self) -> bool {
-        Self::FIELD_COUNT != self.field_count()
-    }
-    pub fn script_hash(&self) -> Byte32 {
-        let slice = self.as_slice();
-        let start = molecule::unpack_number(&slice[4..]) as usize;
-        let end = molecule::unpack_number(&slice[8..]) as usize;
-        Byte32::new_unchecked(self.0.slice(start..end))
-    }
-    pub fn intent_data(&self) -> Bytes {
-        let slice = self.as_slice();
-        let start = molecule::unpack_number(&slice[8..]) as usize;
-        if self.has_extra_fields() {
-            let end = molecule::unpack_number(&slice[12..]) as usize;
-            Bytes::new_unchecked(self.0.slice(start..end))
-        } else {
-            Bytes::new_unchecked(self.0.slice(start..))
-        }
-    }
-    pub fn as_reader<'r>(&'r self) -> AnotherIntentReader<'r> {
-        AnotherIntentReader::new_unchecked(self.as_slice())
-    }
-}
-impl molecule::prelude::Entity for AnotherIntent {
-    type Builder = AnotherIntentBuilder;
-    const NAME: &'static str = "AnotherIntent";
-    fn new_unchecked(data: molecule::bytes::Bytes) -> Self {
-        AnotherIntent(data)
-    }
-    fn as_bytes(&self) -> molecule::bytes::Bytes {
-        self.0.clone()
-    }
-    fn as_slice(&self) -> &[u8] {
-        &self.0[..]
-    }
-    fn from_slice(slice: &[u8]) -> molecule::error::VerificationResult<Self> {
-        AnotherIntentReader::from_slice(slice).map(|reader| reader.to_entity())
-    }
-    fn from_compatible_slice(slice: &[u8]) -> molecule::error::VerificationResult<Self> {
-        AnotherIntentReader::from_compatible_slice(slice).map(|reader| reader.to_entity())
-    }
-    fn new_builder() -> Self::Builder {
-        ::core::default::Default::default()
-    }
-    fn as_builder(self) -> Self::Builder {
-        Self::new_builder()
-            .script_hash(self.script_hash())
-            .intent_data(self.intent_data())
-    }
-}
-#[derive(Clone, Copy)]
-pub struct AnotherIntentReader<'r>(&'r [u8]);
-impl<'r> ::core::fmt::LowerHex for AnotherIntentReader<'r> {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
-        use molecule::hex_string;
-        if f.alternate() {
-            write!(f, "0x")?;
-        }
-        write!(f, "{}", hex_string(self.as_slice()))
-    }
-}
-impl<'r> ::core::fmt::Debug for AnotherIntentReader<'r> {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
-        write!(f, "{}({:#x})", Self::NAME, self)
-    }
-}
-impl<'r> ::core::fmt::Display for AnotherIntentReader<'r> {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
-        write!(f, "{} {{ ", Self::NAME)?;
-        write!(f, "{}: {}", "script_hash", self.script_hash())?;
-        write!(f, ", {}: {}", "intent_data", self.intent_data())?;
-        let extra_count = self.count_extra_fields();
-        if extra_count != 0 {
-            write!(f, ", .. ({} fields)", extra_count)?;
-        }
-        write!(f, " }}")
-    }
-}
-impl<'r> AnotherIntentReader<'r> {
-    pub const FIELD_COUNT: usize = 2;
-    pub fn total_size(&self) -> usize {
-        molecule::unpack_number(self.as_slice()) as usize
-    }
-    pub fn field_count(&self) -> usize {
-        if self.total_size() == molecule::NUMBER_SIZE {
-            0
-        } else {
-            (molecule::unpack_number(&self.as_slice()[molecule::NUMBER_SIZE..]) as usize / 4) - 1
-        }
-    }
-    pub fn count_extra_fields(&self) -> usize {
-        self.field_count() - Self::FIELD_COUNT
-    }
-    pub fn has_extra_fields(&self) -> bool {
-        Self::FIELD_COUNT != self.field_count()
-    }
-    pub fn script_hash(&self) -> Byte32Reader<'r> {
-        let slice = self.as_slice();
-        let start = molecule::unpack_number(&slice[4..]) as usize;
-        let end = molecule::unpack_number(&slice[8..]) as usize;
-        Byte32Reader::new_unchecked(&self.as_slice()[start..end])
-    }
-    pub fn intent_data(&self) -> BytesReader<'r> {
-        let slice = self.as_slice();
-        let start = molecule::unpack_number(&slice[8..]) as usize;
-        if self.has_extra_fields() {
-            let end = molecule::unpack_number(&slice[12..]) as usize;
-            BytesReader::new_unchecked(&self.as_slice()[start..end])
-        } else {
-            BytesReader::new_unchecked(&self.as_slice()[start..])
-        }
-    }
-}
-impl<'r> molecule::prelude::Reader<'r> for AnotherIntentReader<'r> {
-    type Entity = AnotherIntent;
-    const NAME: &'static str = "AnotherIntentReader";
-    fn to_entity(&self) -> Self::Entity {
-        Self::Entity::new_unchecked(self.as_slice().to_owned().into())
-    }
-    fn new_unchecked(slice: &'r [u8]) -> Self {
-        AnotherIntentReader(slice)
-    }
-    fn as_slice(&self) -> &'r [u8] {
-        self.0
-    }
-    fn verify(slice: &[u8], compatible: bool) -> molecule::error::VerificationResult<()> {
-        use molecule::verification_error as ve;
-        let slice_len = slice.len();
-        if slice_len < molecule::NUMBER_SIZE {
-            return ve!(Self, HeaderIsBroken, molecule::NUMBER_SIZE, slice_len);
-        }
-        let total_size = molecule::unpack_number(slice) as usize;
-        if slice_len != total_size {
-            return ve!(Self, TotalSizeNotMatch, total_size, slice_len);
-        }
-        if slice_len < molecule::NUMBER_SIZE * 2 {
-            return ve!(Self, HeaderIsBroken, molecule::NUMBER_SIZE * 2, slice_len);
-        }
-        let offset_first = molecule::unpack_number(&slice[molecule::NUMBER_SIZE..]) as usize;
-        if offset_first % molecule::NUMBER_SIZE != 0 || offset_first < molecule::NUMBER_SIZE * 2 {
-            return ve!(Self, OffsetsNotMatch);
-        }
-        if slice_len < offset_first {
-            return ve!(Self, HeaderIsBroken, offset_first, slice_len);
-        }
-        let field_count = offset_first / molecule::NUMBER_SIZE - 1;
-        if field_count < Self::FIELD_COUNT {
-            return ve!(Self, FieldCountNotMatch, Self::FIELD_COUNT, field_count);
-        } else if !compatible && field_count > Self::FIELD_COUNT {
-            return ve!(Self, FieldCountNotMatch, Self::FIELD_COUNT, field_count);
-        };
-        let mut offsets: Vec<usize> = slice[molecule::NUMBER_SIZE..offset_first]
-            .chunks_exact(molecule::NUMBER_SIZE)
-            .map(|x| molecule::unpack_number(x) as usize)
-            .collect();
-        offsets.push(total_size);
-        if offsets.windows(2).any(|i| i[0] > i[1]) {
-            return ve!(Self, OffsetsNotMatch);
-        }
-        Byte32Reader::verify(&slice[offsets[0]..offsets[1]], compatible)?;
-        BytesReader::verify(&slice[offsets[1]..offsets[2]], compatible)?;
-        Ok(())
-    }
-}
-#[derive(Clone, Debug, Default)]
-pub struct AnotherIntentBuilder {
-    pub(crate) script_hash: Byte32,
-    pub(crate) intent_data: Bytes,
-}
-impl AnotherIntentBuilder {
-    pub const FIELD_COUNT: usize = 2;
-    pub fn script_hash(mut self, v: Byte32) -> Self {
-        self.script_hash = v;
-        self
-    }
-    pub fn intent_data(mut self, v: Bytes) -> Self {
-        self.intent_data = v;
-        self
-    }
-}
-impl molecule::prelude::Builder for AnotherIntentBuilder {
-    type Entity = AnotherIntent;
-    const NAME: &'static str = "AnotherIntentBuilder";
-    fn expected_length(&self) -> usize {
-        molecule::NUMBER_SIZE * (Self::FIELD_COUNT + 1)
-            + self.script_hash.as_slice().len()
-            + self.intent_data.as_slice().len()
-    }
-    fn write<W: molecule::io::Write>(&self, writer: &mut W) -> molecule::io::Result<()> {
-        let mut total_size = molecule::NUMBER_SIZE * (Self::FIELD_COUNT + 1);
-        let mut offsets = Vec::with_capacity(Self::FIELD_COUNT);
-        offsets.push(total_size);
-        total_size += self.script_hash.as_slice().len();
-        offsets.push(total_size);
-        total_size += self.intent_data.as_slice().len();
-        writer.write_all(&molecule::pack_number(total_size as molecule::Number))?;
-        for offset in offsets.into_iter() {
-            writer.write_all(&molecule::pack_number(offset as molecule::Number))?;
-        }
-        writer.write_all(self.script_hash.as_slice())?;
-        writer.write_all(self.intent_data.as_slice())?;
-        Ok(())
-    }
-    fn build(&self) -> Self::Entity {
-        let mut inner = Vec::with_capacity(self.expected_length());
-        self.write(&mut inner)
-            .unwrap_or_else(|_| panic!("{} build should be ok", Self::NAME));
-        AnotherIntent::new_unchecked(inner.into())
-    }
-}
-#[derive(Clone)]
-pub struct IntentTarget(molecule::bytes::Bytes);
-impl ::core::fmt::LowerHex for IntentTarget {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
-        use molecule::hex_string;
-        if f.alternate() {
-            write!(f, "0x")?;
-        }
-        write!(f, "{}", hex_string(self.as_slice()))
-    }
-}
-impl ::core::fmt::Debug for IntentTarget {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
-        write!(f, "{}({:#x})", Self::NAME, self)
-    }
-}
-impl ::core::fmt::Display for IntentTarget {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
-        write!(f, "{}(", Self::NAME)?;
-        self.to_enum().display_inner(f)?;
-        write!(f, ")")
-    }
-}
-impl ::core::default::Default for IntentTarget {
-    fn default() -> Self {
-        let v = molecule::bytes::Bytes::from_static(&Self::DEFAULT_VALUE);
-        IntentTarget::new_unchecked(v)
-    }
-}
-impl IntentTarget {
-    const DEFAULT_VALUE: [u8; 57] = [
-        0, 0, 0, 0, 53, 0, 0, 0, 16, 0, 0, 0, 48, 0, 0, 0, 49, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    ];
-    pub const ITEMS_COUNT: usize = 2;
-    pub fn item_id(&self) -> molecule::Number {
-        molecule::unpack_number(self.as_slice())
-    }
-    pub fn to_enum(&self) -> IntentTargetUnion {
-        let inner = self.0.slice(molecule::NUMBER_SIZE..);
-        match self.item_id() {
-            0 => Script::new_unchecked(inner).into(),
-            1 => AnotherIntent::new_unchecked(inner).into(),
-            _ => panic!("{}: invalid data", Self::NAME),
-        }
-    }
-    pub fn as_reader<'r>(&'r self) -> IntentTargetReader<'r> {
-        IntentTargetReader::new_unchecked(self.as_slice())
-    }
-}
-impl molecule::prelude::Entity for IntentTarget {
-    type Builder = IntentTargetBuilder;
-    const NAME: &'static str = "IntentTarget";
-    fn new_unchecked(data: molecule::bytes::Bytes) -> Self {
-        IntentTarget(data)
-    }
-    fn as_bytes(&self) -> molecule::bytes::Bytes {
-        self.0.clone()
-    }
-    fn as_slice(&self) -> &[u8] {
-        &self.0[..]
-    }
-    fn from_slice(slice: &[u8]) -> molecule::error::VerificationResult<Self> {
-        IntentTargetReader::from_slice(slice).map(|reader| reader.to_entity())
-    }
-    fn from_compatible_slice(slice: &[u8]) -> molecule::error::VerificationResult<Self> {
-        IntentTargetReader::from_compatible_slice(slice).map(|reader| reader.to_entity())
-    }
-    fn new_builder() -> Self::Builder {
-        ::core::default::Default::default()
-    }
-    fn as_builder(self) -> Self::Builder {
-        Self::new_builder().set(self.to_enum())
-    }
-}
-#[derive(Clone, Copy)]
-pub struct IntentTargetReader<'r>(&'r [u8]);
-impl<'r> ::core::fmt::LowerHex for IntentTargetReader<'r> {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
-        use molecule::hex_string;
-        if f.alternate() {
-            write!(f, "0x")?;
-        }
-        write!(f, "{}", hex_string(self.as_slice()))
-    }
-}
-impl<'r> ::core::fmt::Debug for IntentTargetReader<'r> {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
-        write!(f, "{}({:#x})", Self::NAME, self)
-    }
-}
-impl<'r> ::core::fmt::Display for IntentTargetReader<'r> {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
-        write!(f, "{}(", Self::NAME)?;
-        self.to_enum().display_inner(f)?;
-        write!(f, ")")
-    }
-}
-impl<'r> IntentTargetReader<'r> {
-    pub const ITEMS_COUNT: usize = 2;
-    pub fn item_id(&self) -> molecule::Number {
-        molecule::unpack_number(self.as_slice())
-    }
-    pub fn to_enum(&self) -> IntentTargetUnionReader<'r> {
-        let inner = &self.as_slice()[molecule::NUMBER_SIZE..];
-        match self.item_id() {
-            0 => ScriptReader::new_unchecked(inner).into(),
-            1 => AnotherIntentReader::new_unchecked(inner).into(),
-            _ => panic!("{}: invalid data", Self::NAME),
-        }
-    }
-}
-impl<'r> molecule::prelude::Reader<'r> for IntentTargetReader<'r> {
-    type Entity = IntentTarget;
-    const NAME: &'static str = "IntentTargetReader";
-    fn to_entity(&self) -> Self::Entity {
-        Self::Entity::new_unchecked(self.as_slice().to_owned().into())
-    }
-    fn new_unchecked(slice: &'r [u8]) -> Self {
-        IntentTargetReader(slice)
-    }
-    fn as_slice(&self) -> &'r [u8] {
-        self.0
-    }
-    fn verify(slice: &[u8], compatible: bool) -> molecule::error::VerificationResult<()> {
-        use molecule::verification_error as ve;
-        let slice_len = slice.len();
-        if slice_len < molecule::NUMBER_SIZE {
-            return ve!(Self, HeaderIsBroken, molecule::NUMBER_SIZE, slice_len);
-        }
-        let item_id = molecule::unpack_number(slice);
-        let inner_slice = &slice[molecule::NUMBER_SIZE..];
-        match item_id {
-            0 => ScriptReader::verify(inner_slice, compatible),
-            1 => AnotherIntentReader::verify(inner_slice, compatible),
-            _ => ve!(Self, UnknownItem, Self::ITEMS_COUNT, item_id),
-        }?;
-        Ok(())
-    }
-}
-#[derive(Clone, Debug, Default)]
-pub struct IntentTargetBuilder(pub(crate) IntentTargetUnion);
-impl IntentTargetBuilder {
-    pub const ITEMS_COUNT: usize = 2;
-    pub fn set<I>(mut self, v: I) -> Self
-    where
-        I: ::core::convert::Into<IntentTargetUnion>,
-    {
-        self.0 = v.into();
-        self
-    }
-}
-impl molecule::prelude::Builder for IntentTargetBuilder {
-    type Entity = IntentTarget;
-    const NAME: &'static str = "IntentTargetBuilder";
-    fn expected_length(&self) -> usize {
-        molecule::NUMBER_SIZE + self.0.as_slice().len()
-    }
-    fn write<W: molecule::io::Write>(&self, writer: &mut W) -> molecule::io::Result<()> {
-        writer.write_all(&molecule::pack_number(self.0.item_id()))?;
-        writer.write_all(self.0.as_slice())
-    }
-    fn build(&self) -> Self::Entity {
-        let mut inner = Vec::with_capacity(self.expected_length());
-        self.write(&mut inner)
-            .unwrap_or_else(|_| panic!("{} build should be ok", Self::NAME));
-        IntentTarget::new_unchecked(inner.into())
-    }
-}
-#[derive(Debug, Clone)]
-pub enum IntentTargetUnion {
-    Script(Script),
-    AnotherIntent(AnotherIntent),
-}
-#[derive(Debug, Clone, Copy)]
-pub enum IntentTargetUnionReader<'r> {
-    Script(ScriptReader<'r>),
-    AnotherIntent(AnotherIntentReader<'r>),
-}
-impl ::core::default::Default for IntentTargetUnion {
-    fn default() -> Self {
-        IntentTargetUnion::Script(::core::default::Default::default())
-    }
-}
-impl ::core::fmt::Display for IntentTargetUnion {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
-        match self {
-            IntentTargetUnion::Script(ref item) => {
-                write!(f, "{}::{}({})", Self::NAME, Script::NAME, item)
-            }
-            IntentTargetUnion::AnotherIntent(ref item) => {
-                write!(f, "{}::{}({})", Self::NAME, AnotherIntent::NAME, item)
-            }
-        }
-    }
-}
-impl<'r> ::core::fmt::Display for IntentTargetUnionReader<'r> {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
-        match self {
-            IntentTargetUnionReader::Script(ref item) => {
-                write!(f, "{}::{}({})", Self::NAME, Script::NAME, item)
-            }
-            IntentTargetUnionReader::AnotherIntent(ref item) => {
-                write!(f, "{}::{}({})", Self::NAME, AnotherIntent::NAME, item)
-            }
-        }
-    }
-}
-impl IntentTargetUnion {
-    pub(crate) fn display_inner(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
-        match self {
-            IntentTargetUnion::Script(ref item) => write!(f, "{}", item),
-            IntentTargetUnion::AnotherIntent(ref item) => write!(f, "{}", item),
-        }
-    }
-}
-impl<'r> IntentTargetUnionReader<'r> {
-    pub(crate) fn display_inner(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
-        match self {
-            IntentTargetUnionReader::Script(ref item) => write!(f, "{}", item),
-            IntentTargetUnionReader::AnotherIntent(ref item) => write!(f, "{}", item),
-        }
-    }
-}
-impl ::core::convert::From<Script> for IntentTargetUnion {
-    fn from(item: Script) -> Self {
-        IntentTargetUnion::Script(item)
-    }
-}
-impl ::core::convert::From<AnotherIntent> for IntentTargetUnion {
-    fn from(item: AnotherIntent) -> Self {
-        IntentTargetUnion::AnotherIntent(item)
-    }
-}
-impl<'r> ::core::convert::From<ScriptReader<'r>> for IntentTargetUnionReader<'r> {
-    fn from(item: ScriptReader<'r>) -> Self {
-        IntentTargetUnionReader::Script(item)
-    }
-}
-impl<'r> ::core::convert::From<AnotherIntentReader<'r>> for IntentTargetUnionReader<'r> {
-    fn from(item: AnotherIntentReader<'r>) -> Self {
-        IntentTargetUnionReader::AnotherIntent(item)
-    }
-}
-impl IntentTargetUnion {
-    pub const NAME: &'static str = "IntentTargetUnion";
-    pub fn as_bytes(&self) -> molecule::bytes::Bytes {
-        match self {
-            IntentTargetUnion::Script(item) => item.as_bytes(),
-            IntentTargetUnion::AnotherIntent(item) => item.as_bytes(),
-        }
-    }
-    pub fn as_slice(&self) -> &[u8] {
-        match self {
-            IntentTargetUnion::Script(item) => item.as_slice(),
-            IntentTargetUnion::AnotherIntent(item) => item.as_slice(),
-        }
-    }
-    pub fn item_id(&self) -> molecule::Number {
-        match self {
-            IntentTargetUnion::Script(_) => 0,
-            IntentTargetUnion::AnotherIntent(_) => 1,
-        }
-    }
-    pub fn item_name(&self) -> &str {
-        match self {
-            IntentTargetUnion::Script(_) => "Script",
-            IntentTargetUnion::AnotherIntent(_) => "AnotherIntent",
-        }
-    }
-    pub fn as_reader<'r>(&'r self) -> IntentTargetUnionReader<'r> {
-        match self {
-            IntentTargetUnion::Script(item) => item.as_reader().into(),
-            IntentTargetUnion::AnotherIntent(item) => item.as_reader().into(),
-        }
-    }
-}
-impl<'r> IntentTargetUnionReader<'r> {
-    pub const NAME: &'r str = "IntentTargetUnionReader";
-    pub fn as_slice(&self) -> &'r [u8] {
-        match self {
-            IntentTargetUnionReader::Script(item) => item.as_slice(),
-            IntentTargetUnionReader::AnotherIntent(item) => item.as_slice(),
-        }
-    }
-    pub fn item_id(&self) -> molecule::Number {
-        match self {
-            IntentTargetUnionReader::Script(_) => 0,
-            IntentTargetUnionReader::AnotherIntent(_) => 1,
-        }
-    }
-    pub fn item_name(&self) -> &str {
-        match self {
-            IntentTargetUnionReader::Script(_) => "Script",
-            IntentTargetUnionReader::AnotherIntent(_) => "AnotherIntent",
-        }
-    }
-}
-impl From<Script> for IntentTarget {
-    fn from(value: Script) -> Self {
-        Self::new_builder().set(value).build()
-    }
-}
-impl From<AnotherIntent> for IntentTarget {
-    fn from(value: AnotherIntent) -> Self {
-        Self::new_builder().set(value).build()
-    }
-}
-#[derive(Clone)]
-pub struct IntentTargetVec(molecule::bytes::Bytes);
-impl ::core::fmt::LowerHex for IntentTargetVec {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
-        use molecule::hex_string;
-        if f.alternate() {
-            write!(f, "0x")?;
-        }
-        write!(f, "{}", hex_string(self.as_slice()))
-    }
-}
-impl ::core::fmt::Debug for IntentTargetVec {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
-        write!(f, "{}({:#x})", Self::NAME, self)
-    }
-}
-impl ::core::fmt::Display for IntentTargetVec {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
-        write!(f, "{} [", Self::NAME)?;
-        for i in 0..self.len() {
-            if i == 0 {
-                write!(f, "{}", self.get_unchecked(i))?;
-            } else {
-                write!(f, ", {}", self.get_unchecked(i))?;
-            }
-        }
-        write!(f, "]")
-    }
-}
-impl ::core::default::Default for IntentTargetVec {
-    fn default() -> Self {
-        let v = molecule::bytes::Bytes::from_static(&Self::DEFAULT_VALUE);
-        IntentTargetVec::new_unchecked(v)
-    }
-}
-impl IntentTargetVec {
-    const DEFAULT_VALUE: [u8; 4] = [4, 0, 0, 0];
-    pub fn total_size(&self) -> usize {
-        molecule::unpack_number(self.as_slice()) as usize
-    }
-    pub fn item_count(&self) -> usize {
-        if self.total_size() == molecule::NUMBER_SIZE {
-            0
-        } else {
-            (molecule::unpack_number(&self.as_slice()[molecule::NUMBER_SIZE..]) as usize / 4) - 1
-        }
-    }
-    pub fn len(&self) -> usize {
-        self.item_count()
-    }
-    pub fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
-    pub fn get(&self, idx: usize) -> Option<IntentTarget> {
-        if idx >= self.len() {
-            None
-        } else {
-            Some(self.get_unchecked(idx))
-        }
-    }
-    pub fn get_unchecked(&self, idx: usize) -> IntentTarget {
-        let slice = self.as_slice();
-        let start_idx = molecule::NUMBER_SIZE * (1 + idx);
-        let start = molecule::unpack_number(&slice[start_idx..]) as usize;
-        if idx == self.len() - 1 {
-            IntentTarget::new_unchecked(self.0.slice(start..))
-        } else {
-            let end_idx = start_idx + molecule::NUMBER_SIZE;
-            let end = molecule::unpack_number(&slice[end_idx..]) as usize;
-            IntentTarget::new_unchecked(self.0.slice(start..end))
-        }
-    }
-    pub fn as_reader<'r>(&'r self) -> IntentTargetVecReader<'r> {
-        IntentTargetVecReader::new_unchecked(self.as_slice())
-    }
-}
-impl molecule::prelude::Entity for IntentTargetVec {
-    type Builder = IntentTargetVecBuilder;
-    const NAME: &'static str = "IntentTargetVec";
-    fn new_unchecked(data: molecule::bytes::Bytes) -> Self {
-        IntentTargetVec(data)
-    }
-    fn as_bytes(&self) -> molecule::bytes::Bytes {
-        self.0.clone()
-    }
-    fn as_slice(&self) -> &[u8] {
-        &self.0[..]
-    }
-    fn from_slice(slice: &[u8]) -> molecule::error::VerificationResult<Self> {
-        IntentTargetVecReader::from_slice(slice).map(|reader| reader.to_entity())
-    }
-    fn from_compatible_slice(slice: &[u8]) -> molecule::error::VerificationResult<Self> {
-        IntentTargetVecReader::from_compatible_slice(slice).map(|reader| reader.to_entity())
-    }
-    fn new_builder() -> Self::Builder {
-        ::core::default::Default::default()
-    }
-    fn as_builder(self) -> Self::Builder {
-        Self::new_builder().extend(self.into_iter())
-    }
-}
-#[derive(Clone, Copy)]
-pub struct IntentTargetVecReader<'r>(&'r [u8]);
-impl<'r> ::core::fmt::LowerHex for IntentTargetVecReader<'r> {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
-        use molecule::hex_string;
-        if f.alternate() {
-            write!(f, "0x")?;
-        }
-        write!(f, "{}", hex_string(self.as_slice()))
-    }
-}
-impl<'r> ::core::fmt::Debug for IntentTargetVecReader<'r> {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
-        write!(f, "{}({:#x})", Self::NAME, self)
-    }
-}
-impl<'r> ::core::fmt::Display for IntentTargetVecReader<'r> {
-    fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
-        write!(f, "{} [", Self::NAME)?;
-        for i in 0..self.len() {
-            if i == 0 {
-                write!(f, "{}", self.get_unchecked(i))?;
-            } else {
-                write!(f, ", {}", self.get_unchecked(i))?;
-            }
-        }
-        write!(f, "]")
-    }
-}
-impl<'r> IntentTargetVecReader<'r> {
-    pub fn total_size(&self) -> usize {
-        molecule::unpack_number(self.as_slice()) as usize
-    }
-    pub fn item_count(&self) -> usize {
-        if self.total_size() == molecule::NUMBER_SIZE {
-            0
-        } else {
-            (molecule::unpack_number(&self.as_slice()[molecule::NUMBER_SIZE..]) as usize / 4) - 1
-        }
-    }
-    pub fn len(&self) -> usize {
-        self.item_count()
-    }
-    pub fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
-    pub fn get(&self, idx: usize) -> Option<IntentTargetReader<'r>> {
-        if idx >= self.len() {
-            None
-        } else {
-            Some(self.get_unchecked(idx))
-        }
-    }
-    pub fn get_unchecked(&self, idx: usize) -> IntentTargetReader<'r> {
-        let slice = self.as_slice();
-        let start_idx = molecule::NUMBER_SIZE * (1 + idx);
-        let start = molecule::unpack_number(&slice[start_idx..]) as usize;
-        if idx == self.len() - 1 {
-            IntentTargetReader::new_unchecked(&self.as_slice()[start..])
-        } else {
-            let end_idx = start_idx + molecule::NUMBER_SIZE;
-            let end = molecule::unpack_number(&slice[end_idx..]) as usize;
-            IntentTargetReader::new_unchecked(&self.as_slice()[start..end])
-        }
-    }
-}
-impl<'r> molecule::prelude::Reader<'r> for IntentTargetVecReader<'r> {
-    type Entity = IntentTargetVec;
-    const NAME: &'static str = "IntentTargetVecReader";
-    fn to_entity(&self) -> Self::Entity {
-        Self::Entity::new_unchecked(self.as_slice().to_owned().into())
-    }
-    fn new_unchecked(slice: &'r [u8]) -> Self {
-        IntentTargetVecReader(slice)
-    }
-    fn as_slice(&self) -> &'r [u8] {
-        self.0
-    }
-    fn verify(slice: &[u8], compatible: bool) -> molecule::error::VerificationResult<()> {
-        use molecule::verification_error as ve;
-        let slice_len = slice.len();
-        if slice_len < molecule::NUMBER_SIZE {
-            return ve!(Self, HeaderIsBroken, molecule::NUMBER_SIZE, slice_len);
-        }
-        let total_size = molecule::unpack_number(slice) as usize;
-        if slice_len != total_size {
-            return ve!(Self, TotalSizeNotMatch, total_size, slice_len);
-        }
-        if slice_len == molecule::NUMBER_SIZE {
-            return Ok(());
-        }
-        if slice_len < molecule::NUMBER_SIZE * 2 {
-            return ve!(
-                Self,
-                TotalSizeNotMatch,
-                molecule::NUMBER_SIZE * 2,
-                slice_len
-            );
-        }
-        let offset_first = molecule::unpack_number(&slice[molecule::NUMBER_SIZE..]) as usize;
-        if offset_first % molecule::NUMBER_SIZE != 0 || offset_first < molecule::NUMBER_SIZE * 2 {
-            return ve!(Self, OffsetsNotMatch);
-        }
-        if slice_len < offset_first {
-            return ve!(Self, HeaderIsBroken, offset_first, slice_len);
-        }
-        let mut offsets: Vec<usize> = slice[molecule::NUMBER_SIZE..offset_first]
-            .chunks_exact(molecule::NUMBER_SIZE)
-            .map(|x| molecule::unpack_number(x) as usize)
-            .collect();
-        offsets.push(total_size);
-        if offsets.windows(2).any(|i| i[0] > i[1]) {
-            return ve!(Self, OffsetsNotMatch);
-        }
-        for pair in offsets.windows(2) {
-            let start = pair[0];
-            let end = pair[1];
-            IntentTargetReader::verify(&slice[start..end], compatible)?;
-        }
-        Ok(())
-    }
-}
-#[derive(Clone, Debug, Default)]
-pub struct IntentTargetVecBuilder(pub(crate) Vec<IntentTarget>);
-impl IntentTargetVecBuilder {
-    pub fn set(mut self, v: Vec<IntentTarget>) -> Self {
-        self.0 = v;
-        self
-    }
-    pub fn push(mut self, v: IntentTarget) -> Self {
-        self.0.push(v);
-        self
-    }
-    pub fn extend<T: ::core::iter::IntoIterator<Item = IntentTarget>>(mut self, iter: T) -> Self {
-        for elem in iter {
-            self.0.push(elem);
-        }
-        self
-    }
-    pub fn replace(&mut self, index: usize, v: IntentTarget) -> Option<IntentTarget> {
-        self.0
-            .get_mut(index)
-            .map(|item| ::core::mem::replace(item, v))
-    }
-}
-impl molecule::prelude::Builder for IntentTargetVecBuilder {
-    type Entity = IntentTargetVec;
-    const NAME: &'static str = "IntentTargetVecBuilder";
-    fn expected_length(&self) -> usize {
-        molecule::NUMBER_SIZE * (self.0.len() + 1)
-            + self
-                .0
-                .iter()
-                .map(|inner| inner.as_slice().len())
-                .sum::<usize>()
-    }
-    fn write<W: molecule::io::Write>(&self, writer: &mut W) -> molecule::io::Result<()> {
-        let item_count = self.0.len();
-        if item_count == 0 {
-            writer.write_all(&molecule::pack_number(
-                molecule::NUMBER_SIZE as molecule::Number,
-            ))?;
-        } else {
-            let (total_size, offsets) = self.0.iter().fold(
-                (
-                    molecule::NUMBER_SIZE * (item_count + 1),
-                    Vec::with_capacity(item_count),
-                ),
-                |(start, mut offsets), inner| {
-                    offsets.push(start);
-                    (start + inner.as_slice().len(), offsets)
-                },
-            );
-            writer.write_all(&molecule::pack_number(total_size as molecule::Number))?;
-            for offset in offsets.into_iter() {
-                writer.write_all(&molecule::pack_number(offset as molecule::Number))?;
-            }
-            for inner in self.0.iter() {
-                writer.write_all(inner.as_slice())?;
-            }
-        }
-        Ok(())
-    }
-    fn build(&self) -> Self::Entity {
-        let mut inner = Vec::with_capacity(self.expected_length());
-        self.write(&mut inner)
-            .unwrap_or_else(|_| panic!("{} build should be ok", Self::NAME));
-        IntentTargetVec::new_unchecked(inner.into())
-    }
-}
-pub struct IntentTargetVecIterator(IntentTargetVec, usize, usize);
-impl ::core::iter::Iterator for IntentTargetVecIterator {
-    type Item = IntentTarget;
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.1 >= self.2 {
-            None
-        } else {
-            let ret = self.0.get_unchecked(self.1);
-            self.1 += 1;
-            Some(ret)
-        }
-    }
-}
-impl ::core::iter::ExactSizeIterator for IntentTargetVecIterator {
-    fn len(&self) -> usize {
-        self.2 - self.1
-    }
-}
-impl ::core::iter::IntoIterator for IntentTargetVec {
-    type Item = IntentTarget;
-    type IntoIter = IntentTargetVecIterator;
-    fn into_iter(self) -> Self::IntoIter {
-        let len = self.len();
-        IntentTargetVecIterator(self, 0, len)
-    }
-}
-impl<'r> IntentTargetVecReader<'r> {
-    pub fn iter<'t>(&'t self) -> IntentTargetVecReaderIterator<'t, 'r> {
-        IntentTargetVecReaderIterator(&self, 0, self.len())
-    }
-}
-pub struct IntentTargetVecReaderIterator<'t, 'r>(&'t IntentTargetVecReader<'r>, usize, usize);
-impl<'t: 'r, 'r> ::core::iter::Iterator for IntentTargetVecReaderIterator<'t, 'r> {
-    type Item = IntentTargetReader<'t>;
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.1 >= self.2 {
-            None
-        } else {
-            let ret = self.0.get_unchecked(self.1);
-            self.1 += 1;
-            Some(ret)
-        }
-    }
-}
-impl<'t: 'r, 'r> ::core::iter::ExactSizeIterator for IntentTargetVecReaderIterator<'t, 'r> {
-    fn len(&self) -> usize {
-        self.2 - self.1
-    }
-}
-impl ::core::iter::FromIterator<IntentTarget> for IntentTargetVec {
-    fn from_iter<T: IntoIterator<Item = IntentTarget>>(iter: T) -> Self {
-        Self::new_builder().extend(iter).build()
-    }
-}
-#[derive(Clone)]
 pub struct IntentData(molecule::bytes::Bytes);
 impl ::core::fmt::LowerHex for IntentData {
     fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
@@ -1382,10 +465,7 @@ impl ::core::fmt::Debug for IntentData {
 impl ::core::fmt::Display for IntentData {
     fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
         write!(f, "{} {{ ", Self::NAME)?;
-        write!(f, "{}: {}", "location", self.location())?;
-        write!(f, ", {}: {}", "owner", self.owner())?;
-        write!(f, ", {}: {}", "expire_since", self.expire_since())?;
-        write!(f, ", {}: {}", "signers", self.signers())?;
+        write!(f, "{}: {}", "creators", self.creators())?;
         write!(f, ", {}: {}", "targets", self.targets())?;
         write!(f, ", {}: {}", "input_data", self.input_data())?;
         let extra_count = self.count_extra_fields();
@@ -1402,12 +482,10 @@ impl ::core::default::Default for IntentData {
     }
 }
 impl IntentData {
-    const DEFAULT_VALUE: [u8; 82] = [
-        82, 0, 0, 0, 28, 0, 0, 0, 29, 0, 0, 0, 62, 0, 0, 0, 70, 0, 0, 0, 74, 0, 0, 0, 78, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0,
+    const DEFAULT_VALUE: [u8; 28] = [
+        28, 0, 0, 0, 16, 0, 0, 0, 20, 0, 0, 0, 24, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0,
     ];
-    pub const FIELD_COUNT: usize = 6;
+    pub const FIELD_COUNT: usize = 3;
     pub fn total_size(&self) -> usize {
         molecule::unpack_number(self.as_slice()) as usize
     }
@@ -1424,41 +502,23 @@ impl IntentData {
     pub fn has_extra_fields(&self) -> bool {
         Self::FIELD_COUNT != self.field_count()
     }
-    pub fn location(&self) -> Byte {
+    pub fn creators(&self) -> ScriptAttrVec {
         let slice = self.as_slice();
         let start = molecule::unpack_number(&slice[4..]) as usize;
         let end = molecule::unpack_number(&slice[8..]) as usize;
-        Byte::new_unchecked(self.0.slice(start..end))
+        ScriptAttrVec::new_unchecked(self.0.slice(start..end))
     }
-    pub fn owner(&self) -> ScriptAttr {
+    pub fn targets(&self) -> BytesVec {
         let slice = self.as_slice();
         let start = molecule::unpack_number(&slice[8..]) as usize;
         let end = molecule::unpack_number(&slice[12..]) as usize;
-        ScriptAttr::new_unchecked(self.0.slice(start..end))
-    }
-    pub fn expire_since(&self) -> Uint64 {
-        let slice = self.as_slice();
-        let start = molecule::unpack_number(&slice[12..]) as usize;
-        let end = molecule::unpack_number(&slice[16..]) as usize;
-        Uint64::new_unchecked(self.0.slice(start..end))
-    }
-    pub fn signers(&self) -> ScriptAttrVec {
-        let slice = self.as_slice();
-        let start = molecule::unpack_number(&slice[16..]) as usize;
-        let end = molecule::unpack_number(&slice[20..]) as usize;
-        ScriptAttrVec::new_unchecked(self.0.slice(start..end))
-    }
-    pub fn targets(&self) -> IntentTargetVec {
-        let slice = self.as_slice();
-        let start = molecule::unpack_number(&slice[20..]) as usize;
-        let end = molecule::unpack_number(&slice[24..]) as usize;
-        IntentTargetVec::new_unchecked(self.0.slice(start..end))
+        BytesVec::new_unchecked(self.0.slice(start..end))
     }
     pub fn input_data(&self) -> Bytes {
         let slice = self.as_slice();
-        let start = molecule::unpack_number(&slice[24..]) as usize;
+        let start = molecule::unpack_number(&slice[12..]) as usize;
         if self.has_extra_fields() {
-            let end = molecule::unpack_number(&slice[28..]) as usize;
+            let end = molecule::unpack_number(&slice[16..]) as usize;
             Bytes::new_unchecked(self.0.slice(start..end))
         } else {
             Bytes::new_unchecked(self.0.slice(start..))
@@ -1491,10 +551,7 @@ impl molecule::prelude::Entity for IntentData {
     }
     fn as_builder(self) -> Self::Builder {
         Self::new_builder()
-            .location(self.location())
-            .owner(self.owner())
-            .expire_since(self.expire_since())
-            .signers(self.signers())
+            .creators(self.creators())
             .targets(self.targets())
             .input_data(self.input_data())
     }
@@ -1518,10 +575,7 @@ impl<'r> ::core::fmt::Debug for IntentDataReader<'r> {
 impl<'r> ::core::fmt::Display for IntentDataReader<'r> {
     fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
         write!(f, "{} {{ ", Self::NAME)?;
-        write!(f, "{}: {}", "location", self.location())?;
-        write!(f, ", {}: {}", "owner", self.owner())?;
-        write!(f, ", {}: {}", "expire_since", self.expire_since())?;
-        write!(f, ", {}: {}", "signers", self.signers())?;
+        write!(f, "{}: {}", "creators", self.creators())?;
         write!(f, ", {}: {}", "targets", self.targets())?;
         write!(f, ", {}: {}", "input_data", self.input_data())?;
         let extra_count = self.count_extra_fields();
@@ -1532,7 +586,7 @@ impl<'r> ::core::fmt::Display for IntentDataReader<'r> {
     }
 }
 impl<'r> IntentDataReader<'r> {
-    pub const FIELD_COUNT: usize = 6;
+    pub const FIELD_COUNT: usize = 3;
     pub fn total_size(&self) -> usize {
         molecule::unpack_number(self.as_slice()) as usize
     }
@@ -1549,41 +603,23 @@ impl<'r> IntentDataReader<'r> {
     pub fn has_extra_fields(&self) -> bool {
         Self::FIELD_COUNT != self.field_count()
     }
-    pub fn location(&self) -> ByteReader<'r> {
+    pub fn creators(&self) -> ScriptAttrVecReader<'r> {
         let slice = self.as_slice();
         let start = molecule::unpack_number(&slice[4..]) as usize;
         let end = molecule::unpack_number(&slice[8..]) as usize;
-        ByteReader::new_unchecked(&self.as_slice()[start..end])
+        ScriptAttrVecReader::new_unchecked(&self.as_slice()[start..end])
     }
-    pub fn owner(&self) -> ScriptAttrReader<'r> {
+    pub fn targets(&self) -> BytesVecReader<'r> {
         let slice = self.as_slice();
         let start = molecule::unpack_number(&slice[8..]) as usize;
         let end = molecule::unpack_number(&slice[12..]) as usize;
-        ScriptAttrReader::new_unchecked(&self.as_slice()[start..end])
-    }
-    pub fn expire_since(&self) -> Uint64Reader<'r> {
-        let slice = self.as_slice();
-        let start = molecule::unpack_number(&slice[12..]) as usize;
-        let end = molecule::unpack_number(&slice[16..]) as usize;
-        Uint64Reader::new_unchecked(&self.as_slice()[start..end])
-    }
-    pub fn signers(&self) -> ScriptAttrVecReader<'r> {
-        let slice = self.as_slice();
-        let start = molecule::unpack_number(&slice[16..]) as usize;
-        let end = molecule::unpack_number(&slice[20..]) as usize;
-        ScriptAttrVecReader::new_unchecked(&self.as_slice()[start..end])
-    }
-    pub fn targets(&self) -> IntentTargetVecReader<'r> {
-        let slice = self.as_slice();
-        let start = molecule::unpack_number(&slice[20..]) as usize;
-        let end = molecule::unpack_number(&slice[24..]) as usize;
-        IntentTargetVecReader::new_unchecked(&self.as_slice()[start..end])
+        BytesVecReader::new_unchecked(&self.as_slice()[start..end])
     }
     pub fn input_data(&self) -> BytesReader<'r> {
         let slice = self.as_slice();
-        let start = molecule::unpack_number(&slice[24..]) as usize;
+        let start = molecule::unpack_number(&slice[12..]) as usize;
         if self.has_extra_fields() {
-            let end = molecule::unpack_number(&slice[28..]) as usize;
+            let end = molecule::unpack_number(&slice[16..]) as usize;
             BytesReader::new_unchecked(&self.as_slice()[start..end])
         } else {
             BytesReader::new_unchecked(&self.as_slice()[start..])
@@ -1636,43 +672,25 @@ impl<'r> molecule::prelude::Reader<'r> for IntentDataReader<'r> {
         if offsets.windows(2).any(|i| i[0] > i[1]) {
             return ve!(Self, OffsetsNotMatch);
         }
-        ByteReader::verify(&slice[offsets[0]..offsets[1]], compatible)?;
-        ScriptAttrReader::verify(&slice[offsets[1]..offsets[2]], compatible)?;
-        Uint64Reader::verify(&slice[offsets[2]..offsets[3]], compatible)?;
-        ScriptAttrVecReader::verify(&slice[offsets[3]..offsets[4]], compatible)?;
-        IntentTargetVecReader::verify(&slice[offsets[4]..offsets[5]], compatible)?;
-        BytesReader::verify(&slice[offsets[5]..offsets[6]], compatible)?;
+        ScriptAttrVecReader::verify(&slice[offsets[0]..offsets[1]], compatible)?;
+        BytesVecReader::verify(&slice[offsets[1]..offsets[2]], compatible)?;
+        BytesReader::verify(&slice[offsets[2]..offsets[3]], compatible)?;
         Ok(())
     }
 }
 #[derive(Clone, Debug, Default)]
 pub struct IntentDataBuilder {
-    pub(crate) location: Byte,
-    pub(crate) owner: ScriptAttr,
-    pub(crate) expire_since: Uint64,
-    pub(crate) signers: ScriptAttrVec,
-    pub(crate) targets: IntentTargetVec,
+    pub(crate) creators: ScriptAttrVec,
+    pub(crate) targets: BytesVec,
     pub(crate) input_data: Bytes,
 }
 impl IntentDataBuilder {
-    pub const FIELD_COUNT: usize = 6;
-    pub fn location(mut self, v: Byte) -> Self {
-        self.location = v;
+    pub const FIELD_COUNT: usize = 3;
+    pub fn creators(mut self, v: ScriptAttrVec) -> Self {
+        self.creators = v;
         self
     }
-    pub fn owner(mut self, v: ScriptAttr) -> Self {
-        self.owner = v;
-        self
-    }
-    pub fn expire_since(mut self, v: Uint64) -> Self {
-        self.expire_since = v;
-        self
-    }
-    pub fn signers(mut self, v: ScriptAttrVec) -> Self {
-        self.signers = v;
-        self
-    }
-    pub fn targets(mut self, v: IntentTargetVec) -> Self {
+    pub fn targets(mut self, v: BytesVec) -> Self {
         self.targets = v;
         self
     }
@@ -1686,10 +704,7 @@ impl molecule::prelude::Builder for IntentDataBuilder {
     const NAME: &'static str = "IntentDataBuilder";
     fn expected_length(&self) -> usize {
         molecule::NUMBER_SIZE * (Self::FIELD_COUNT + 1)
-            + self.location.as_slice().len()
-            + self.owner.as_slice().len()
-            + self.expire_since.as_slice().len()
-            + self.signers.as_slice().len()
+            + self.creators.as_slice().len()
             + self.targets.as_slice().len()
             + self.input_data.as_slice().len()
     }
@@ -1697,13 +712,7 @@ impl molecule::prelude::Builder for IntentDataBuilder {
         let mut total_size = molecule::NUMBER_SIZE * (Self::FIELD_COUNT + 1);
         let mut offsets = Vec::with_capacity(Self::FIELD_COUNT);
         offsets.push(total_size);
-        total_size += self.location.as_slice().len();
-        offsets.push(total_size);
-        total_size += self.owner.as_slice().len();
-        offsets.push(total_size);
-        total_size += self.expire_since.as_slice().len();
-        offsets.push(total_size);
-        total_size += self.signers.as_slice().len();
+        total_size += self.creators.as_slice().len();
         offsets.push(total_size);
         total_size += self.targets.as_slice().len();
         offsets.push(total_size);
@@ -1712,10 +721,7 @@ impl molecule::prelude::Builder for IntentDataBuilder {
         for offset in offsets.into_iter() {
             writer.write_all(&molecule::pack_number(offset as molecule::Number))?;
         }
-        writer.write_all(self.location.as_slice())?;
-        writer.write_all(self.owner.as_slice())?;
-        writer.write_all(self.expire_since.as_slice())?;
-        writer.write_all(self.signers.as_slice())?;
+        writer.write_all(self.creators.as_slice())?;
         writer.write_all(self.targets.as_slice())?;
         writer.write_all(self.input_data.as_slice())?;
         Ok(())
